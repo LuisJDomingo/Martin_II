@@ -6,6 +6,7 @@ from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import IMDB
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from utils import export_to_csv
 
 # Definir el modelo
 class RNN(nn.Module):
@@ -54,7 +55,9 @@ def train_model():
         label_list = torch.tensor(label_list, dtype=torch.int64)
         offsets = torch.tensor(offsets[:-1])  # Se excluye el último valor para mantener la estructura correcta
         text_list = torch.cat(text_list)
-
+        export_to_csv(label_list, filename='label_list.csv')
+        export_to_csv(text_list, filename='text_list.csv')
+        export_to_csv(offsets, filename='offsets.csv')
         return label_list, text_list, offsets
 
 
