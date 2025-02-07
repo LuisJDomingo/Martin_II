@@ -20,32 +20,32 @@ El objetivo de este proyecto es entrenar un modelo de RNN para clasificar reseñ
 ## Instalación
 
 1. Clona el repositorio:
-   ```sh
+```sh
    git clone https://github.com/tu_usuario/Martin_II.git
    cd Martin_II
-   ```
+```
 
 
 2. Crea y activa un entorno virtual:
 
-    ```sh
+```sh
     python -m venv env
     .\env\Scripts\activate  # En Windows
     source env/bin/activate  # En macOS/Linux
-    ```
+```
 3. Instala las dependencias:
 
-    ```sh
+```sh
     pip install -r requirements.txt
     python -m spacy download en_core_web_sm
-    ```
+```
 ## Uso  
 
 1. Ejecuta el script principal para entrenar el modelo:
 
-    ```sh
+```sh
     python MII_draft.py
-    ```
+```
 2. El progreso del entrenamiento se mostrará en la consola, incluyendo la pérdida por lote y cualquier offset inválido encontrado.
 
 ## Estructura del Proyecto
@@ -57,7 +57,7 @@ El objetivo de este proyecto es entrenar un modelo de RNN para clasificar reseñ
 
 **Definición del Model**
 
-  ```python
+```python
     class RNN(nn.Module):
         def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim):
             super().__init__()
@@ -71,18 +71,18 @@ El objetivo de este proyecto es entrenar un modelo de RNN para clasificar reseñ
             packed_output, hidden = self.rnn(packed_embedded)
             output, output_lengths = nn.utils.rnn.pad_packed_sequence(packed_output, batch_first=True)
             return self.fc(hidden.squeeze(0))
-   ```
+```
 **Función `yield_tokens`**
 
-   ```python
+```python
     def yield_tokens(data_iter):
         for _, text in data_iter:
             yield tokenizer(text)
- ```
+```
 
 **Función `train_model`**
 
-   ```python
+```python
     def train_model():
         def collate_batch(batch):
             label_list, text_list, offsets = [], [], []
@@ -130,7 +130,7 @@ El objetivo de este proyecto es entrenar un modelo de RNN para clasificar reseñ
                 optimizer.step()
                 print(f"Batch {i+1} Loss: {loss.item()}")
                 
-   ```
+```
 
 **Contribuciones**
 Las contribuciones son bienvenidas. Por favor, abre un issue o envía un pull request para cualquier mejora o corrección.
