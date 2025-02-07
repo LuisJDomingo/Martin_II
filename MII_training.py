@@ -97,6 +97,8 @@ def train_model():
             loss.backward()
             optimizer.step()
             #print(f"Batch {i+1} Loss: {loss.item()}")
+    # Guardar el modelo entrenado
+    torch.save(model.state_dict(), 'model.pth')
     print("invalid_offsets", invalid_offsets)
     print("total_offsets", total_offsets)
 # Llamada a la función train_model
