@@ -9,22 +9,6 @@ from tqdm import tqdm
 from utils import export_to_csv
 from Neural_network import TransformerModel, PositionalEncoding
 
-# Definir el modelo
-'''
-class RNN(nn.Module):
-    def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim):
-        super().__init__()
-        self.embedding = nn.Embedding(input_dim, embedding_dim)
-        self.rnn = nn.RNN(embedding_dim, hidden_dim, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, output_dim)
-    
-    def forward(self, text, offsets):
-        embedded = self.embedding(text)
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, offsets, batch_first=True, enforce_sorted=False)
-        packed_output, hidden = self.rnn(packed_embedded)
-        output, _ = nn.utils.rnn.pad_packed_sequence(packed_output, batch_first=True)
-        return self.fc(hidden.squeeze(0))
-'''
 # Tokenizador y vocabulario
 tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 print("Tokenizer loaded")
