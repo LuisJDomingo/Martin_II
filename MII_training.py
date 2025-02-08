@@ -7,8 +7,10 @@ from torchtext.datasets import IMDB
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from utils import export_to_csv
+from Neural_network import TransformerModel, PositionalEncoding
 
 # Definir el modelo
+'''
 class RNN(nn.Module):
     def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim):
         super().__init__()
@@ -22,7 +24,7 @@ class RNN(nn.Module):
         packed_output, hidden = self.rnn(packed_embedded)
         output, _ = nn.utils.rnn.pad_packed_sequence(packed_output, batch_first=True)
         return self.fc(hidden.squeeze(0))
-
+'''
 # Tokenizador y vocabulario
 tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 print("Tokenizer loaded")
@@ -63,17 +65,20 @@ def train_model():
         #export_to_csv(offsets, filename='offsets.csv')
         return label_list, text_list, offsets
 
-
     train_iter, test_iter = IMDB(split=('train', 'test'))
     train_dataloader = DataLoader(list(train_iter), batch_size=64, shuffle=True, collate_fn=collate_batch)
     test_dataloader = DataLoader(list(test_iter), batch_size=64, shuffle=True, collate_fn=collate_batch)
 
-    input_dim = len(vocab)
-    embedding_dim = 100
-    hidden_dim = 256
-    output_dim = 1
+    vocab_size = len(vocab)
+    d_model = 512  # Dimensión del modelo
+    nhead = 8  # Número de cabezas de atención
+    num_encoder_layers = 6  # Número de capas del codificador
+    num_decoder_layers = 6  # Número de capas del decodificador
+    dim_feedforward = 2048  # Dimensión de la capa feedforward
+    max_seq_length = 100  # Longitud máxima de la secuencia
+    dropout = 0.1  # Tasa de dropout
 
-    model = RNN(input_dim, embedding_dim, hidden_dim, output_dim)
+    model = TransformerModel(vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, max_seq_length, dropout)
     optimizer = optim.Adam(model.parameters())
     criterion = nn.BCEWithLogitsLoss()
 
@@ -92,7 +97,7 @@ def train_model():
                 invalid_offsets += 1 
                 continue
 
-            predictions = model(text, offsets)
+            predictions = model(text, text, src_mask=None, tgt_mask=None)
             if predictions.dim() > 1:
                 predictions = predictions.squeeze(1)
             predictions = predictions.view(-1)
@@ -104,6 +109,7 @@ def train_model():
     torch.save(model.state_dict(), 'model.pth')
     print("invalid_offsets", invalid_offsets)
     print("total_offsets", total_offsets)
+
 # Llamada a la función train_model
 if __name__ == "__main__":
     train_model()
