@@ -55,9 +55,12 @@ def train_model():
         label_list = torch.tensor(label_list, dtype=torch.int64)
         offsets = torch.tensor(offsets[:-1])  # Se excluye el último valor para mantener la estructura correcta
         text_list = torch.cat(text_list)
-        export_to_csv(label_list, filename='label_list.csv')
-        export_to_csv(text_list, filename='text_list.csv')
-        export_to_csv(offsets, filename='offsets.csv')
+        print(type(label_list))
+        print(type(text_list))
+        print(type(offsets))
+        #export_to_csv(label_list, filename='label_list.csv')
+        #export_to_csv(text_list, filename='text_list.csv')
+        #export_to_csv(offsets, filename='offsets.csv')
         return label_list, text_list, offsets
 
 
