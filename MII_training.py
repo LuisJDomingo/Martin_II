@@ -18,6 +18,8 @@ def yield_tokens(data_iter):
         yield tokenizer(text)
 
 train_iter, test_iter = IMDB(split=('train', 'test'))
+print(train_iter)
+print(test_iter)
 print("Data iterators created")
 
 vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
