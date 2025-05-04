@@ -1,139 +1,58 @@
-﻿# Martin_II
+# Martin II - Procesamiento de Lenguaje Natural y Redes Neuronales
 
-# Proyecto de Clasificación de Sentimientos con RNN
-
-Este proyecto implementa un modelo de red neuronal recurrente (RNN) para la clasificación de sentimientos en reseñas de películas utilizando el conjunto de datos IMDB.
-
-## Descripción
-
-El objetivo de este proyecto es entrenar un modelo de RNN para clasificar reseñas de películas como positivas o negativas. Utiliza la biblioteca `torchtext` para el procesamiento de texto y `PyTorch` para la construcción y entrenamiento del modelo.
-
-## Requisitos
-
-- Python 3.6 o superior
-- PyTorch
-- torchtext
-- tqdm
-- spacy
-- Conjunto de datos IMDB
-
-## Instalación
-
-1. Clona el repositorio:
-```sh
-   git clone https://github.com/tu_usuario/Martin_II.git
-   cd Martin_II
-```
-
-
-2. Crea y activa un entorno virtual:
-
-```sh
-    python -m venv env
-    .\env\Scripts\activate  # En Windows
-    source env/bin/activate  # En macOS/Linux
-```
-3. Instala las dependencias:
-
-```sh
-    pip install -r requirements.txt
-    python -m spacy download en_core_web_sm
-```
-## Uso  
-
-1. Ejecuta el script principal para entrenar el modelo:
-
-```sh
-    python MII_draft.py
-```
-2. El progreso del entrenamiento se mostrará en la consola, incluyendo la pérdida por lote y cualquier offset inválido encontrado.
+Este proyecto implementa un conjunto de programas para realizar tareas de procesamiento de lenguaje natural (NLP) y aprendizaje profundo utilizando PyTorch, TorchText y Flask. El objetivo principal es entrenar y servir modelos de redes neuronales para tareas como clasificación de texto y transcripción de audio.
 
 ## Estructura del Proyecto
 
-- `MII_draft.py`: Contiene el código principal para la definición del modelo, procesamiento de datos y entrenamiento.
-- `requirements.txt`: Lista de dependencias necesarias para el proyecto.
+- **`app.py`**: Implementa una API REST con Flask para realizar predicciones utilizando un modelo RNN entrenado.
+- **`audio_to_text.py`**: Convierte archivos de audio a texto utilizando la biblioteca `speech_recognition`.
+- **`clean_cache.py`**: Limpia la caché de TorchText para evitar problemas con los datos almacenados localmente.
+- **`interface.py`**: Proporciona una interfaz gráfica simple con Gradio para interactuar con un modelo LLM.
+- **`MII_training.py`**: Entrena un modelo Transformer para clasificación de texto utilizando el dataset IMDB.
+- **`Neural_network.py`**: Define una arquitectura Transformer para tareas de NLP.
+- **`utils.py`**: Contiene utilidades como la exportación de datos a archivos CSV.
+- **`requirements.txt`**: Lista las dependencias necesarias para ejecutar el proyecto.
 
-## Código Principal
+## Requisitos
 
-**Definición del Model**
+- Python 3.8 o superior
+- Dependencias listadas en `requirements.txt`
 
-```python
-    class RNN(nn.Module):
-        def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim):
-            super().__init__()
-            self.embedding = nn.Embedding(input_dim, embedding_dim)
-            self.rnn = nn.RNN(embedding_dim, hidden_dim, batch_first=True)
-            self.fc = nn.Linear(hidden_dim, output_dim)
-        
-        def forward(self, text, offsets):
-            embedded = self.embedding(text)
-            packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, offsets, batch_first=True, enforce_sorted=False)
-            packed_output, hidden = self.rnn(packed_embedded)
-            output, output_lengths = nn.utils.rnn.pad_packed_sequence(packed_output, batch_first=True)
-            return self.fc(hidden.squeeze(0))
-```
-**Función `yield_tokens`**
+## Instalación
 
-```python
-    def yield_tokens(data_iter):
-        for _, text in data_iter:
-            yield tokenizer(text)
-```
+1. Clona este repositorio:
 
-**Función `train_model`**
+    ```bash
+        git clone https://github.com/tu_usuario/Martin_II.git
+        cd Martin_II
+    ```
+2. Crea un entorno virtual y activa:
 
-```python
-    def train_model():
-        def collate_batch(batch):
-            label_list, text_list, offsets = [], [], []
-            current_offset = 0
-            for (_label, _text) in batch:
-                label_list.append(int(_label == 'pos'))
-                processed_text = torch.tensor(vocab(tokenizer(_text)), dtype=torch.int64)
-                text_list.append(processed_text)
-                offsets.append(current_offset)
-                current_offset += processed_text.size(0)
-            label_list = torch.tensor(label_list, dtype=torch.int64)
-            offsets = torch.tensor(offsets, dtype=torch.int64)
-            text_list = torch.cat(text_list)
-            return label_list, text_list, offsets
+    ```bash
+        python -m venv env
+        source env/bin/activate  # En Windows: env\Scripts\activate
+    ```
+3. Instala las dependencias:
 
-        train_iter, test_iter = IMDB(split=('train', 'test'))
-        train_dataloader = DataLoader(list(train_iter), batch_size=64, shuffle=True, collate_fn=collate_batch)
-        test_dataloader = DataLoader(list(test_iter), batch_size=64, shuffle=True, collate_fn=collate_batch)
+    ```bash
+        pip install -r requirements.txt
+    ```
+## Uso
+Entrenamiento del Modelo
+Ejecuta ```MII_training.p```y para entrenar un modelo Transformer con el dataset IMDB:
 
-        input_dim = len(vocab)
-        embedding_dim = 100
-        hidden_dim = 256
-        output_dim = 1
-
-        model = RNN(input_dim, embedding_dim, hidden_dim, output_dim)
-        optimizer = optim.Adam(model.parameters())
-        criterion = nn.BCEWithLogitsLoss()
-
-        model = model.to(torch.device('cpu'))
-        criterion = criterion.to(torch.device('cpu'))
-
-        for epoch in range(5):
-            print(f"Epoch {epoch+1}")
-            for i, (label, text, offsets) in enumerate(tqdm(train_dataloader, desc=f"Training Epoch {epoch+1}")):
-                optimizer.zero_grad()
-                if torch.any(offsets <= 0):
-                    print(f"Invalid offsets found: {offsets}")
-                    continue
-                predictions = model(text, offsets)
-                if predictions.dim() > 1:
-                    predictions = predictions.squeeze(1)
-                predictions = predictions.view(-1)
-                loss = criterion(predictions, label.float())
-                loss.backward()
-                optimizer.step()
-                print(f"Batch {i+1} Loss: {loss.item()}")
-                
-```
-
-**Contribuciones**
-Las contribuciones son bienvenidas. Por favor, abre un issue o envía un pull request para cualquier mejora o corrección.
-
-**Licencia**
-Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+    ```bash
+        python [MII_training.py](http://_vscodecontentref_/0)
+    ```
+Servir el Modelo
+Ejecuta app.py para iniciar la API REST:
+    ```bash
+            python [app.py](http://_vscodecontentref_/1)
+    ```
+La API estará disponible en http://127.0.0.1:5000/predict. Envía un POST request con un JSON como:
+    ```bash
+        {
+            "text": "Este es un ejemplo de texto."
+        }
+    ```
+    
