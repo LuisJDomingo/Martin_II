@@ -33,7 +33,6 @@ Este proyecto implementa un conjunto de programas para realizar tareas de proces
         source env/bin/activate  # En Windows: env\Scripts\activate
     ```
 3. Instala las dependencias:
-
     ```bash
         pip install -r requirements.txt
     ```
@@ -41,9 +40,9 @@ Este proyecto implementa un conjunto de programas para realizar tareas de proces
 Entrenamiento del Modelo
 Ejecuta ```MII_training.p```y para entrenar un modelo Transformer con el dataset IMDB:
 
-    ```bash
+```bash
         python [MII_training.py](http://_vscodecontentref_/0)
-    ```
+```
 Servir el Modelo
 Ejecuta app.py para iniciar la API REST:
     ```bash
