@@ -12,11 +12,20 @@ def generate_text(prompt, max_length=50):
 # Función para manejar entradas de audio (transcripción)
 def transcribe_audio(audio):
     import speech_recognition as sr
+    import os
+
+    # Verificar si el archivo existe
+    if not os.path.isfile(audio):
+        return "Error: No se pudo encontrar el archivo de audio."
+
     recognizer = sr.Recognizer()
-    with sr.AudioFile(audio) as source:
-        audio_data = recognizer.record(source)
-        text = recognizer.recognize_google(audio_data)
-    return text
+    try:
+        with sr.AudioFile(audio) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+        return text
+    except Exception as e:
+        return f"Error al procesar el audio: {str(e)}"
 
 # Función para manejar entradas de imagen (descripción)
 def describe_image(image):
@@ -38,7 +47,7 @@ with gr.Blocks() as demo:
         text_button.click(generate_text, inputs=[text_input], outputs=[text_output])
     
     with gr.Tab("Audio"):
-        audio_input = gr.Audio(source="upload", type="filepath", label="Sube un archivo de audio")
+        audio_input = gr.Audio(type="filepath", label="Sube un archivo de audio")  # Ajustado
         audio_output = gr.Textbox(label="Transcripción")
         audio_button = gr.Button("Transcribir")
         audio_button.click(transcribe_audio, inputs=[audio_input], outputs=[audio_output])
@@ -51,4 +60,4 @@ with gr.Blocks() as demo:
 
 # Ejecutar la interfaz
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share=True)
