@@ -1,4 +1,5 @@
 import gradio as gr
+#import transformers
 from transformers import pipeline
 
 # Cargar un modelo LLM preentrenado (por ejemplo, GPT-2)
